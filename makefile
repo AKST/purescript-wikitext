@@ -14,10 +14,17 @@ endef
 
 
 watch:
-	${GULP} watch
+	@${GULP} watch
 
 test:
-	${GULP} test 
+	@${GULP} test 
+
+docs:
+	@psc-docs \
+		src/Data/WikiText.purs \
+		src/Data/WikiText/TextFormat.purs \
+		src/Data/WikiText/Parsing/*.purs \
+		> docs.md
 	
 init:
 	$(call npm-check, bower, bower)

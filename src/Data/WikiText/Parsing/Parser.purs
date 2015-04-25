@@ -1,4 +1,9 @@
-module Data.WikiText.Parsing.Parser where
+module Data.WikiText.Parsing.Parser (
+
+  WikiTextParser(..),
+  wikiText
+  
+) where
 
 import Text.Parsing.Parser
 import Text.Parsing.Parser.Combinators
