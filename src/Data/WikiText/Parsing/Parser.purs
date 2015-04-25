@@ -117,14 +117,9 @@ anyText = choices <?> "any text" where
         body = skipSpace (anyText `manyTill` lookAhead closer) 
         pipe = skipSpace (nextType PipeType)
 
-
     word :: WikiTextParser String
     word = toString <$> try (skipSpace (nextType WordType)) where
       toString (Word w) = w
-
-
-    
-
 
 
 -- 
