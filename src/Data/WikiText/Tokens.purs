@@ -8,6 +8,7 @@ module Data.WikiText.Tokens (
 
 ) where
 
+import Data.WikiText.Header
 import Data.WikiText.TextFormat
 import qualified Data.Map as Map
 
@@ -49,7 +50,7 @@ data Delimiter
 
 data AmbigiousDelimiter
   = DeFormat TextFormat
-  | DeHeading Number
+  | DeHeading HeaderSize
 
 
 --
@@ -155,122 +156,5 @@ instance showXml :: Show Xml where
   show (Closing n) = "Closing " ++ show n
   show (Opening n m) = "Opening " ++ show n ++ " " ++ show m
   show (SelfClosing n m) = "SelfClosing " ++ show n ++ " " ++ show m
-
-
---
--- -- todo newtype wrap this
---
-instance ordWikiText :: Ord WikiToken where
-  compare Linebreak other = case other of
-    Linebreak -> EQ
-    _ -> GT
-  compare Space other = case other of
-    Linebreak -> LT
-    Space -> EQ
-    _ -> GT
-  compare Pipe other = case other of
-    Linebreak -> LT
-    Space -> LT
-    Pipe -> EQ
-    _ -> GT
-  compare (Xml xml) other = case other of
-    Linebreak -> LT
-    Space -> LT
-    Pipe -> LT
-    Xml otherXml -> case [xml, otherXml] of
-      --
-      -- todo compare attributes
-      --
-      [Opening a _, Opening b _] -> a `compare` b
-      [Opening _ _, _        ] -> GT
-      [Closing a, Opening b _] -> LT
-      [Closing a, Closing b] -> a `compare` b
-      [Closing _, _        ] -> GT
-      [SelfClosing a _, SelfClosing b _] -> a `compare` b
-      [SelfClosing a _, _              ] -> LT
-    _ -> GT
-  compare (Word word) other = case other of
-    Linebreak -> LT
-    Space -> LT
-    Pipe -> LT
-    Xml _ -> LT
-    Word otherWord -> word `compare` otherWord
-    _ -> GT
-  compare (Punctuation p) other = case other of
-    Linebreak -> LT
-    Space -> LT
-    Pipe -> LT
-    Xml _ -> LT 
-    Word _ -> LT
-    Punctuation otherP -> case [p, otherP] of
-      [PPeroid, PPeroid] -> EQ
-      [PPeroid, _      ] -> GT
-      [PExclaim, PPeroid] -> LT
-      [PExclaim, PExclaim] -> EQ
-      [PExclaim, _       ] -> GT
-      [PQuestion, PPeroid] -> LT
-      [PQuestion, PExclaim] -> LT
-      [PQuestion, PQuestion] -> EQ
-      [PQuestion, _        ] -> GT 
-      [PComma, PComma] -> EQ 
-      [PComma, _     ] -> LT
-    _ -> GT
-  compare (OpeningDelimiter d) other = case other of
-    Ambigious _ -> GT
-    NamedParameterAssignment -> GT 
-    ClosingDelimiter _ -> GT
-    AmbigiousDelimiter _ -> GT
-    OpeningDelimiter otherD -> compareDelimiter d otherD
-    _ -> LT
-  compare (AmbigiousDelimiter d) other = case other of
-    Ambigious _ -> GT
-    NamedParameterAssignment -> GT 
-    ClosingDelimiter _ -> GT
-    AmbigiousDelimiter otherD -> case [d, otherD] of
-      [DeFormat Italic, DeFormat Italic] -> EQ
-      [DeFormat Italic, DeFormat _     ] -> GT
-      [DeFormat Bold, DeFormat Italic] -> LT
-      [DeFormat Bold, DeFormat Bold] -> EQ
-      [DeFormat Bold, DeFormat _] -> GT
-      [DeFormat Bold, DeFormat _] -> GT
-      [DeFormat ItalicBold, DeFormat ItalicBold] -> EQ
-      [DeFormat ItalicBold, DeFormat _         ] -> LT
-      [DeFormat _, DeHeading _] -> GT
-      [DeHeading _, DeFormat _] -> LT
-      [DeHeading a, DeHeading b] -> a `compare` b
-    _ -> LT
-  compare (ClosingDelimiter d) other = case other of
-    Ambigious _ -> GT
-    NamedParameterAssignment -> GT 
-    ClosingDelimiter otherD -> d `compareDelimiter` otherD
-  compare NamedParameterAssignment other = case other of
-    Ambigious _ -> GT 
-    NamedParameterAssignment -> EQ
-    _ -> LT
-  --
-  -- TODO reimplement once a instance is available
-  --
-  compare (Ambigious a) other = case other of
-    Ambigious otherA -> a `compare` otherA
-    _ -> LT
-
-compareDelimiter :: Delimiter -> Delimiter -> Ordering
-compareDelimiter a b = case a of
-  DeLink -> case b of
-    DeLink -> EQ
-    _      -> GT
-  DeXLink -> case b of
-    DeLink -> LT
-    DeXLink -> EQ
-    _      -> GT
-  DeTemp -> case b of
-    DeLink -> LT
-    DeXLink -> LT
-    DeTemp -> EQ
-    _ -> GT
-  DeTempPar -> case b of
-    DeTempPar -> EQ
-    _         -> LT
-
 
 

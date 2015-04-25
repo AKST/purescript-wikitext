@@ -14,9 +14,10 @@ import Control.Apply
 import Control.Plus
 import Control.Alt
 
+import qualified Data.WikiText.Util.Array as Array
+import Data.WikiText.TextFormat
 import Data.WikiText.Tokens
 import Data.WikiText
-import qualified Data.WikiText.Util.Array as Array
 
 import qualified Data.Array as Array
 
@@ -48,11 +49,12 @@ heading :: WikiTextParser WikiText
 heading = try (nextType LinebreakType) *> do
   size <- getHeadingDelimiter  
   text <- textTillHeadingOf size 
-  pure (Heading size text) where
+  pure (Heading size text) 
+
+    where
 
     getHeadingDelimiter = ambigiousDelimiter HeadingType >>= getSize where 
       getSize (DeHeading size) = pure size
-      getSize _                = fail "getHeadingDelimiter: not a heading" 
 
     textTillHeadingOf size = anyText `manyTill` delimiter where
       delimiter = match (AmbigiousDelimiter (DeHeading size)) 
@@ -62,14 +64,33 @@ heading = try (nextType LinebreakType) *> do
 -- atoms
 --
 
+
 anyText :: WikiTextParser WikiAtom
 anyText = choices <?> "any text" where 
-  choices = word
 
+  choices = wordAtom 
+        <|> formatAtom
+        <|> fail "unsupported word atom"
 
-word :: WikiTextParser WikiAtom
-word = (tokenToSyntax <$> skipSpace (try (nextType WordType))) <?> "word" where
-  tokenToSyntax (Word text) = (WordAtom text)
+  wordAtom :: WikiTextParser WikiAtom
+  wordAtom = wordParser <?> "word" where
+    wordParser = tokenToSyntax <$> try (skipSpace (nextType WordType))
+    tokenToSyntax (Word text) = (WordAtom text)
+  
+  formatAtom :: WikiTextParser WikiAtom
+  formatAtom = formatParser <?> "format text" where
+
+    formatParser = do
+      style <- getFormatDelimiter
+      text  <- textTillStyleOf style
+      pure (FormatAtom style text) 
+  
+    getFormatDelimiter = try delimiterParser >>= getType where
+      delimiterParser = (skipSpace (ambigiousDelimiter FormatType))
+      getType (DeFormat style) = pure style
+  
+    textTillStyleOf style = anyText `manyTill` delimiter where
+      delimiter = match (AmbigiousDelimiter (DeFormat style))
 
 
 -- 
