@@ -1,6 +1,10 @@
 module Data.WikiText where
 
 
+import Data.WikiText.LinkTarget
+import Data.WikiText.TextFormat
+
+
 data WikiText
   = Heading Number [WikiAtom]
   | Paragraph [WikiAtom]
@@ -8,6 +12,7 @@ data WikiText
 
 data WikiAtom
   = WordAtom String
+  | FormatAtom TextFormat [WikiAtom]
   
 
 
@@ -22,7 +27,10 @@ instance eqWikiText :: Eq WikiText where
  
 instance eqWikiAtom :: Eq WikiAtom where
   (/=) l r = not (l == r)
+  
   (==) (WordAtom a1) (WordAtom a2) = a1 == a2 
+  (==) (FormatAtom f1 a1) (FormatAtom f2 a2) = f1 == f2 && a1 == a2 
+  (==) _ _ = false
 
 
 -- SHOW INSTANCES
@@ -34,5 +42,6 @@ instance showWikiText :: Show WikiText where
 
 instance showWikiAtom :: Show WikiAtom where
   show (WordAtom text) = "WordAtom " ++ show text
+  show (FormatAtom f atoms) = "FormatAtom " ++ show f ++ " " ++ show atoms
 
 
