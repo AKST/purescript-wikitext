@@ -1,4 +1,4 @@
-module Util.Array where 
+module Data.WikiText.Util.Array where 
 
 
 import Data.Maybe

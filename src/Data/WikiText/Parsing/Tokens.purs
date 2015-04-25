@@ -19,13 +19,15 @@ import Text.Parsing.Parser.Token
 
 import Data.WikiText.Tokens
 import Data.WikiText.TextFormat
+import Data.WikiText.Util.Monoid
+import Data.WikiText.Util.Array
 
 import qualified Data.Map as Map
 import qualified Data.Tuple as Tuple 
 import qualified Data.Maybe as Maybe 
 
-import Util.Array
-import Util.Monoid
+
+
 
 
 type WikiTokenParser a = Parser String a 

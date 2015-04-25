@@ -1,4 +1,4 @@
-module Util.Monoid where
+module Data.WikiText.Util.Monoid where
 
 import Data.Monoid
 

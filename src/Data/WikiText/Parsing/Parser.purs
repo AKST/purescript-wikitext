@@ -16,9 +16,10 @@ import Control.Alt
 
 import Data.WikiText.Tokens
 import Data.WikiText
+import qualified Data.WikiText.Util.Array as Array
 
 import qualified Data.Array as Array
-import qualified Util.Array as Array
+
 import qualified Data.Maybe as Maybe 
 
 
