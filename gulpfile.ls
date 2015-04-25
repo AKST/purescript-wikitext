@@ -60,7 +60,7 @@ gulp.task \js-libs ->
 gulp.task \ps-src-build ->
   gulp.src ps-source
     .pipe purescript.psc do
-      browserNamespace: 'Wikit'
+      browserNamespace: 'Wikitext'
       output: test-out-name
       main: \AllTests
     .on \error (err) !->
