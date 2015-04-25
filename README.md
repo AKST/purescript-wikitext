@@ -1,4 +1,4 @@
-purescript-wikitext [![Build Status](https://travis-ci.org/AKST/purescript-wikitext?branch=master)](https://api.travis-ci.org/AKST/purescript-wikitext.svg)
+purescript-wikitext [![Build Status](https://api.travis-ci.org/AKST/purescript-wikitext.svg)](https://travis-ci.org/AKST/purescript-wikitext?branch=master)
 ==================
 
 
