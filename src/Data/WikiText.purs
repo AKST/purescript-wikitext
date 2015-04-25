@@ -4,6 +4,7 @@ module Data.WikiText where
 import Data.WikiText.LinkTarget
 import Data.WikiText.TextFormat
 import Data.WikiText.Header
+import qualified Data.Maybe as Maybe
 
 
 data WikiText
@@ -14,6 +15,7 @@ data WikiText
 data WikiAtom
   = WordAtom String
   | FormatAtom TextFormat [WikiAtom]
+  | HyperTextAtom LinkTarget String (Maybe.Maybe [WikiAtom])
   
 
 
@@ -31,6 +33,8 @@ instance eqWikiAtom :: Eq WikiAtom where
   
   (==) (WordAtom a1) (WordAtom a2) = a1 == a2 
   (==) (FormatAtom f1 a1) (FormatAtom f2 a2) = f1 == f2 && a1 == a2 
+  (==) (HyperTextAtom t1 l1 b1) (HyperTextAtom t2 l2 b2) =
+    t1 == t2 && b1 == b2 && l1 == l2
   (==) _ _ = false
 
 
@@ -44,5 +48,6 @@ instance showWikiText :: Show WikiText where
 instance showWikiAtom :: Show WikiAtom where
   show (WordAtom text) = "WordAtom " ++ show text
   show (FormatAtom f atoms) = "FormatAtom " ++ show f ++ " " ++ show atoms
+  show (HyperTextAtom t l b) = "HyperTextAtom " ++ show t ++ " " ++ show l ++ " " ++ show b
 
 
