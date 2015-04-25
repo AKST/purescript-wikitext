@@ -23,6 +23,13 @@ parseOrFail parser input = case Parser.runParser input parser of
   Either.Left (Parser.ParseError err) -> throwException err.message
 
 
+shouldFailParse :: forall s a eff. Parser.Parser s a -> s -> Eff eff Parser.ParseError
+shouldFailParse parser input = case Parser.runParser input parser of
+  Either.Right _  -> throwException "should not have parsed"
+  Either.Left err -> pure err
+
+
+
 rightOrFail :: forall e a eff. (Show e) => Either.Either e a -> Eff eff a
 rightOrFail either = case either of
   Either.Right r  -> pure r

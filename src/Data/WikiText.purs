@@ -3,10 +3,11 @@ module Data.WikiText where
 
 import Data.WikiText.LinkTarget
 import Data.WikiText.TextFormat
+import Data.WikiText.Header
 
 
 data WikiText
-  = Heading Number [WikiAtom]
+  = Heading HeaderSize [WikiAtom]
   | Paragraph [WikiAtom]
 
 

@@ -18,6 +18,7 @@ import Text.Parsing.Parser.String
 import Text.Parsing.Parser.Token
 
 import Data.WikiText.Tokens
+import Data.WikiText.Header
 import Data.WikiText.TextFormat
 import Data.WikiText.Util.Monoid
 import Data.WikiText.Util.Array
@@ -64,7 +65,7 @@ pipe = Pipe `onString` "|" <?> "pipe"
 ambigious :: WikiTokenParser WikiToken
 ambigious = assignOperator `onString` "=" where
   assignOperator = Ambigious [
-    AmbigiousDelimiter (DeHeading 1), 
+    AmbigiousDelimiter (DeHeading Size1), 
     NamedParameterAssignment
   ]
 
@@ -108,11 +109,11 @@ delimiter = (OpeningDelimiter <$> opening)
   ambigious = DeFormat ItalicBold `onString` "'''''"
           <|> DeFormat Bold `onString` "'''"
           <|> DeFormat Italic `onString` "''"
-          <|> DeHeading 6 `onString` "======"
-          <|> DeHeading 5 `onString` "====="
-          <|> DeHeading 4 `onString` "===="
-          <|> DeHeading 3 `onString` "==="
-          <|> DeHeading 2 `onString` "=="
+          <|> DeHeading Size6 `onString` "======"
+          <|> DeHeading Size5 `onString` "====="
+          <|> DeHeading Size4 `onString` "===="
+          <|> DeHeading Size3 `onString` "==="
+          <|> DeHeading Size2 `onString` "=="
 
 
 xml :: WikiTokenParser WikiToken

@@ -5,6 +5,7 @@ import Control.Monad.Eff
 import Data.WikiText
 import Data.WikiText.Tokens
 import Data.WikiText.TextFormat
+import Data.WikiText.Header
 import qualified Data.WikiText.Parsing.Parser as Parser
 
 import Test.Mocha
@@ -96,12 +97,12 @@ tests = do
       it "standalone" do
         doc <- wikiText [
           Linebreak,
-          AmbigiousDelimiter (DeHeading 6),
+          AmbigiousDelimiter (DeHeading Size6),
           Word "hello", Space, Word "world",
-          AmbigiousDelimiter (DeHeading 6), 
+          AmbigiousDelimiter (DeHeading Size6), 
           EndOfInput
         ]
-        doc @?= [Heading 6 [
+        doc @?= [Heading Size6 [
           WordAtom "hello", WordAtom "world"
         ]]
         

@@ -9,6 +9,7 @@ import Test.Assert.Simple
 import Data.Tuple
 import qualified Data.Map as Map
 import qualified Data.WikiText.Parsing.Tokens as Parser
+import Data.WikiText.Header
 import Data.WikiText.TextFormat
 import Data.WikiText.Tokens
 
@@ -88,18 +89,18 @@ tests = do
       it "====== ===== ==== === == =" do
         result <- tokens "====== ===== ==== === == ="
         result @?= [
-          AmbigiousDelimiter (DeHeading 6), 
+          AmbigiousDelimiter (DeHeading Size6), 
           Space,
-          AmbigiousDelimiter (DeHeading 5), 
+          AmbigiousDelimiter (DeHeading Size5), 
           Space,
-          AmbigiousDelimiter (DeHeading 4), 
+          AmbigiousDelimiter (DeHeading Size4), 
           Space,
-          AmbigiousDelimiter (DeHeading 3), 
+          AmbigiousDelimiter (DeHeading Size3), 
           Space,
-          AmbigiousDelimiter (DeHeading 2), 
+          AmbigiousDelimiter (DeHeading Size2), 
           Space,
           Ambigious [
-            AmbigiousDelimiter (DeHeading 1), 
+            AmbigiousDelimiter (DeHeading Size1), 
             NamedParameterAssignment
           ], 
 					EndOfInput
