@@ -4,12 +4,15 @@ module Data.WikiText.Tokens (
   WikiToken(..),
   Punctuation(..),
   Delimiter(..),
-  AmbigiousDelimiter(..)
+  AmbigiousDelimiter(..),
+
+	targetToDelimiter
 
 ) where
 
 import Data.WikiText.Header
 import Data.WikiText.TextFormat
+import Data.WikiText.LinkTarget
 import qualified Data.Map as Map
 
 
@@ -51,6 +54,15 @@ data Delimiter
 data AmbigiousDelimiter
   = DeFormat TextFormat
   | DeHeading HeaderSize
+
+
+--
+-- helpers
+--
+
+targetToDelimiter :: LinkTarget -> Delimiter
+targetToDelimiter External = DeXLink
+targetToDelimiter Internal = DeLink
 
 
 --

@@ -14,11 +14,12 @@ import Control.Apply
 import Control.Plus
 import Control.Alt
 
-import qualified Data.WikiText.Util.Array as Array
+
+import Data.WikiText.LinkTarget
 import Data.WikiText.TextFormat
 import Data.WikiText.Tokens
 import Data.WikiText
-
+import qualified Data.WikiText.Util.Array as Array
 import qualified Data.Array as Array
 
 import qualified Data.Maybe as Maybe 
@@ -70,6 +71,7 @@ anyText = choices <?> "any text" where
 
   choices = wordAtom 
         <|> formatAtom
+        <|> linkAtom
         <|> fail "unsupported word atom"
 
   wordAtom :: WikiTextParser WikiAtom
@@ -91,6 +93,38 @@ anyText = choices <?> "any text" where
   
     textTillStyleOf style = anyText `manyTill` delimiter where
       delimiter = match (AmbigiousDelimiter (DeFormat style))
+
+  --
+  -- internal link             [[hello]]
+  -- internal link with text   [[hello|Greetings]]
+  -- external link             [[[hello]]]
+  -- external link with text   [[[hello|Greetings]]]
+  --
+  linkAtom :: WikiTextParser WikiAtom
+  linkAtom = textLink Internal <|> textLink External where
+
+    textLink target = try (openingDelimiter linkDelimiter) *> do
+      destination <- word <?> "link destination"
+      linkLabel   <- label <?> "text label"
+      pure (HyperTextAtom target destination linkLabel) where
+
+      linkDelimiter :: Delimiter
+      linkDelimiter = targetToDelimiter target 
+      
+      label :: WikiTextParser (Maybe.Maybe [WikiAtom])
+      label = optionMaybe (try (pipe *> body)) <* closer where
+        closer = closingDelimiter linkDelimiter
+        body = skipSpace (anyText `manyTill` lookAhead closer) 
+        pipe = skipSpace (nextType PipeType)
+
+
+    word :: WikiTextParser String
+    word = toString <$> try (skipSpace (nextType WordType)) where
+      toString (Word w) = w
+
+
+    
+
 
 
 -- 
@@ -118,12 +152,20 @@ ambigiousDelimiter tokenType = nextType ADelimiterType >>= impl where
   impl e = fail ("somehow " ++ show e ++ " was passed to ambigiousDelimiter")
 
  
--- delimiterOpening :: Delimiter -> DocParser WikiToken
--- delimiterOpening delimterType = nextType ODelimiterType >>= \delimter ->
---   case delimter of
---     OpeningDelimiter otherType | otherType == delimterType -> pure delimter
---     _                                                      -> empty
+openingDelimiter :: Delimiter -> WikiTextParser Delimiter
+openingDelimiter delimterType = nextType ODelimiterType >>= impl where
+  impl (OpeningDelimiter delimiter)
+    | delimterType == delimiter = pure delimiter
+    | otherwise                 = empty
+  impl e = fail ("somehow " ++ show e ++ " was passed to openingDelimiter")
 
+
+closingDelimiter :: Delimiter -> WikiTextParser Delimiter
+closingDelimiter delimterType = nextType CDelimiterType >>= impl where
+  impl (ClosingDelimiter delimiter)
+    | delimterType == delimiter = pure delimiter
+    | otherwise                 = empty
+  impl e = fail ("somehow " ++ show e ++ " was passed to openingDelimiter")
 
 -- 
 -- -- methods
@@ -131,22 +173,26 @@ ambigiousDelimiter tokenType = nextType ADelimiterType >>= impl where
  
 data TokenType
   = ODelimiterType 
+  | CDelimiterType 
   | ADelimiterType
   | WordType
   | SpaceType
   | LinebreakType
   | EndOfInputType
+  | PipeType
 
 
 instance eqTokenType :: Eq TokenType where
   (/=) l r = not (l == r)
 
   (==) ODelimiterType ODelimiterType = true
+  (==) CDelimiterType CDelimiterType = true
   (==) ADelimiterType ADelimiterType = true
   (==) WordType WordType = true
   (==) SpaceType SpaceType = true
   (==) LinebreakType LinebreakType = true
   (==) EndOfInputType EndOfInputType = true
+  (==) PipeType PipeType = true
   (==) _ _ = false
 
 
@@ -157,15 +203,21 @@ instance eqTokenType :: Eq TokenType where
 nextType :: TokenType -> WikiTextParser WikiToken
 nextType tokenType = token >>= matchType where 
 
-  matchType token@(Word _)               | tokenType == WordType = pure token
-  matchType token@(Space)                | tokenType == SpaceType = pure token
+  matchType token@(Word _) | tokenType == WordType = pure token
+  matchType token@(Space)  | tokenType == SpaceType = pure token
+  matchType token@(Pipe)   | tokenType == PipeType = pure token 
+
+  matchType token@(EndOfInput) | tokenType == EndOfInputType = pure token
+  matchType token@(Linebreak)  | tokenType == LinebreakType = pure token 
+
   matchType token@(AmbigiousDelimiter _) | tokenType == ADelimiterType = pure token
   matchType token@(OpeningDelimiter _)   | tokenType == ODelimiterType = pure token
-  matchType token@(EndOfInput)           | tokenType == EndOfInputType = pure token
-  matchType token@(Linebreak)            | tokenType == LinebreakType = pure token 
+  matchType token@(ClosingDelimiter _)   | tokenType == CDelimiterType = pure token
+
   matchType (Ambigious choices) = firstMatch choices where 
     firstMatch (x:xs) = matchType x <|> firstMatch xs 
     firstMatch []     = empty  
+
   matchType _ = empty
 
  
